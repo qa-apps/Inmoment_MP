@@ -38,15 +38,32 @@ export class HomePage {
       .or(this.header.locator(':is(a,button)[href*="login" i], :is(a,button):has-text("Login")'))
       .first();
   }
-  /** Goes to the site home using configured baseURL. */
+  /**
+   * Navigates to the site home using the configured baseURL.
+   * Ensures consumers can land on the root path reliably.
+   * @returns {Promise<void>}
+   */
   async goto(): Promise<void> { await this.page.goto('/'); }
-  /** Returns link by accessible name or regex. */
+  /**
+   * Returns a link located by accessible name or regular expression.
+   * @param {string|RegExp} name Accessible name or pattern.
+   * @returns {Locator} Link locator.
+   */
   linkByName(name: string | RegExp): Locator { return this.page.getByRole('link', { name }); }
-  /** Hovers a top-level menu to reveal submenu. */
+  /**
+   * Hovers a top-level menu to reveal its submenu.
+   * @param {('Solutions'|'Platform'|'Resources'|'Partners')} menu Menu name.
+   * @returns {Promise<void>}
+   */
   async hoverMenu(menu: 'Solutions'|'Platform'|'Resources'|'Partners'): Promise<void> {
     const t = menu==='Solutions'?this.solutions:menu==='Platform'?this.platform:menu==='Resources'?this.resources:this.partners; await t.hover();
   }
-  /** Clicks a top-level menu and waits for navigation. */
+  /**
+   * Clicks a top-level menu and performs robust navigation using its href when available.
+   * Falls back to a direct click when the element is a button without href.
+   * @param {('Solutions'|'Platform'|'Resources'|'Partners')} menu Menu name.
+   * @returns {Promise<void>}
+   */
   async clickTopNav(menu: 'Solutions' | 'Platform' | 'Resources' | 'Partners'): Promise<void> {
     const t = menu === 'Solutions' ? this.solutions : menu === 'Platform' ? this.platform : menu === 'Resources' ? this.resources : this.partners;
     const href = await t.getAttribute('href');
@@ -61,13 +78,21 @@ export class HomePage {
       await t.click().catch(() => {});
     }
   }
-  /** Follows a named link and asserts URL begins with its href. */
+  /**
+   * Follows a named link and asserts the URL begins with its href.
+   * @param {string} name Link accessible name.
+   * @returns {Promise<void>}
+   */
   async followAndAssertLink(name: string): Promise<void> {
     const link = this.linkByName(new RegExp(`^${this.escapeRegExp(name)}$`, 'i'));
     const href = await link.getAttribute('href'); const expected = this.toAbsoluteHref(href);
     await Promise.all([this.page.waitForURL(u=>u.toString().startsWith(expected)), link.click()]);
   }
-  /** Clicks Request Demo and waits for navigation. */
+  /**
+   * Clicks Request Demo and waits for navigation.
+   * Attempts to resolve a known href and falls back to defaults.
+   * @returns {Promise<void>}
+   */
   async clickRequestDemo(): Promise<void> {
     // Robust fallback logic: try known locators if primary fails or has no href
     let t = this.requestDemo;
@@ -81,7 +106,11 @@ export class HomePage {
     await zapConsentOverlays(this.page);
     await this.page.goto(expected);
   }
-  /** Clicks Login and waits for navigation. */
+  /**
+   * Clicks Login and waits for navigation.
+   * Falls back to identity provider launch URL when href is absent.
+   * @returns {Promise<void>}
+   */
   async clickLogin(): Promise<void> {
     let t = this.login;
     let href = await t.getAttribute('href');
@@ -93,10 +122,21 @@ export class HomePage {
     await zapConsentOverlays(this.page);
     await this.page.goto(expected);
   }
-  /** Resolves relative href to absolute using current page url as base. */
+  /**
+   * Resolves a relative href to an absolute URL using the current page as base.
+   * @param {string|null} href Relative or absolute href.
+   * @returns {string} Absolute URL string.
+   */
   private toAbsoluteHref(href: string | null): string { const raw = href ?? '/'; try { return new URL(raw, this.page.url()).toString(); } catch { return raw; } }
-  /** Escapes a string for RegExp constructor. */
+  /**
+   * Escapes a string for use in a regular expression.
+   * @param {string} v Raw string.
+   * @returns {string} Escaped string.
+   */
   private escapeRegExp(v: string): string { return v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-  /** Returns current page title. */
+  /**
+   * Returns the current page title.
+   * @returns {Promise<string>} Title text.
+   */
   async getTitle(): Promise<string> { return this.page.title(); }
 }
