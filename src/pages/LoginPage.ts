@@ -64,4 +64,62 @@ export class LoginPage {
   async isSignInEnabled(): Promise<boolean> {
     return await this.signInButton.isEnabled();
   }
+
+  /**
+   * Attempts to enter an email if the email input is visible.
+   * @param {string} email Email to enter.
+   * @returns {Promise<boolean>} True if filled, false otherwise.
+   */
+  async tryEnterEmail(email: string): Promise<boolean> {
+    try {
+      if (await this.emailInput.isVisible()) {
+        await this.emailInput.fill(email);
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
+  /**
+   * Attempts to click the Next or Continue button if present and visible.
+   * @returns {Promise<boolean>} True if clicked, false otherwise.
+   */
+  async tryClickNext(): Promise<boolean> {
+    try {
+      if ((await this.nextButton.count()) && await this.nextButton.first().isVisible()) {
+        await this.nextButton.first().click();
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
+  /**
+   * Attempts to enter a password if the password input is visible.
+   * @param {string} password Password to enter.
+   * @returns {Promise<boolean>} True if filled, false otherwise.
+   */
+  async tryEnterPassword(password: string): Promise<boolean> {
+    try {
+      if (await this.passwordInput.isVisible()) {
+        await this.passwordInput.fill(password);
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
+  /**
+   * Attempts to click the Sign In button if present and visible.
+   * @returns {Promise<boolean>} True if clicked, false otherwise.
+   */
+  async tryClickSignIn(): Promise<boolean> {
+    try {
+      if ((await this.signInButton.count()) && await this.signInButton.first().isVisible()) {
+        await this.signInButton.first().click();
+        return true;
+      }
+    } catch {}
+    return false;
+  }
 }
