@@ -1,15 +1,22 @@
 import { test as base, expect } from '@playwright/test';
 import { CounterPage } from '../pages/CounterPage';
+import { HomePage } from '../pages/HomePage';
 
 export type Fixtures = {
   counterPage: CounterPage;
+  homePage: HomePage;
   bootstrapCounter: () => Promise<void>;
+  gotoHome: () => Promise<void>;
 };
 
 export const test = base.extend<Fixtures>({
   counterPage: async ({ page }, use) => {
     const cp = new CounterPage(page);
     await use(cp);
+  },
+  homePage: async ({ page }, use) => {
+    const hp = new HomePage(page);
+    await use(hp);
   },
   bootstrapCounter: async ({ page }, use) => {
     const html = `
@@ -34,6 +41,11 @@ export const test = base.extend<Fixtures>({
     `;
     await use(async () => {
       await page.setContent(html);
+    });
+  },
+  gotoHome: async ({ page }, use) => {
+    await use(async () => {
+      await page.goto('/');
     });
   }
 });
