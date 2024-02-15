@@ -43,5 +43,8 @@ test.describe('ROI calculator navigation', () => {
     // If a form/input exists, ensure it is interactive (best-effort)
     const inputs = page.locator('input, select');
     await expect.soft(inputs.first()).toBeVisible({ timeout: 10000 });
+
+    // Soft-check that we are not on an obvious error route
+    await expect.soft(page).not.toHaveURL(/error|404/i);
   });
 });
