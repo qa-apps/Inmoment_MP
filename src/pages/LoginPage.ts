@@ -13,7 +13,10 @@ export class LoginPage {
    */
   constructor(page: Page) {
     this.page = page;
-    this.emailInput = page.getByLabel(/email/i).or(page.getByPlaceholder(/email/i));
+    this.emailInput = page.getByLabel(/email/i)
+      .or(page.getByPlaceholder(/email/i))
+      .or(page.locator('input[type="email"], input[id*="email" i], input[name*="email" i]'))
+      .first();
     this.nextButton = page.getByRole('button', { name: /next|continue/i });
     this.passwordInput = page.getByLabel(/password/i).or(page.getByPlaceholder(/password/i));
     this.signInButton = page.getByRole('button', { name: /sign in|log in/i });
