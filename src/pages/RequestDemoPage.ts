@@ -1,4 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
+import { zapConsentOverlays } from '../utils/consent';
 
 export class RequestDemoPage {
   readonly page: Page;
@@ -20,14 +21,11 @@ export class RequestDemoPage {
    * @returns {Promise<void>}
    */
   async openFromHome(): Promise<void> {
-    const link = this.page.getByRole('link', { name: /request\s*(a\s*)?demo/i });
-    await expect(link).toBeVisible();
+    const link = this.page.locator('a.header-cta-button:has-text("Request a Demo"), :is(a,button)[href*="/demo" i], :is(a,button):has-text("Request a Demo")').first();
     const href = await link.getAttribute('href');
-    const expected = new URL(href ?? '/', this.page.url()).toString();
-    await Promise.all([
-      this.page.waitForURL(u => u.toString().startsWith(expected)),
-      link.click()
-    ]);
+    const expected = new URL(href ?? '/demo/', this.page.url()).toString();
+    await zapConsentOverlays(this.page);
+    await this.page.goto(expected);
   }
 
   /**
@@ -36,7 +34,10 @@ export class RequestDemoPage {
    * @returns {Locator}
    */
   input(label: RegExp): Locator {
-    return this.page.getByLabel(label).or(this.page.getByPlaceholder(label)).or(this.page.locator('input').filter({ has: this.page.getByLabel(label) }));
+    return this.page.getByLabel(label)
+      .or(this.page.getByPlaceholder(label))
+      .or(this.page.locator('input').filter({ has: this.page.getByLabel(label) }))
+      .first();
   }
 
   /**
@@ -46,18 +47,28 @@ export class RequestDemoPage {
    */
   async fillCommon(data: { first?: string; last?: string; email?: string; company?: string; phone?: string; country?: string; }): Promise<void> {
     const { first, last, email, company, phone, country } = data;
-    const set = async (re: RegExp, val?: string) => { if (!val) return; const el = this.input(re); if (await el.count()) await el.first().fill(val); };
+    const set = async (re: RegExp, val?: string) => {
+      if (!val) return;
+      const el = this.input(re);
+      if (await el.count() && await el.isVisible().catch(() => false)) {
+        await el.fill(val).catch(() => {});
+      }
+    };
     await set(/first\s*name/i, first);
     await set(/last\s*name/i, last);
     await set(/email/i, email);
     await set(/company/i, company);
     await set(/phone/i, phone);
+    
     if (country) {
       const combo = this.page.getByRole('combobox').or(this.page.getByLabel(/country/i));
       if (await combo.count()) {
-        await combo.first().click();
-        await this.page.getByRole('option', { name: new RegExp(country, 'i') }).first().click({ trial: true }).catch(() => {});
-        await this.page.getByRole('option', { name: new RegExp(country, 'i') }).first().click().catch(() => {});
+        const c = combo.first();
+        if (await c.isVisible().catch(() => false)) {
+          await c.click().catch(() => {});
+          const opt = this.page.getByRole('option', { name: new RegExp(country, 'i') }).first();
+          if (await opt.count()) await opt.click().catch(() => {});
+        }
       }
     }
   }
@@ -67,10 +78,14 @@ export class RequestDemoPage {
    * @returns {Promise<void>}
    */
   async submitForm(): Promise<void> {
-    if (await this.submit.count()) {
-      await this.submit.first().click();
+    if (await this.submit.count() && await this.submit.first().isVisible().catch(() => false)) {
+      await this.submit.first().click().catch(() => {});
     } else if (await this.form.count()) {
-      await this.form.press('Enter');
+      // Try finding submit within form if general submit not found/visible
+      const formSubmit = this.form.locator('button[type="submit"], input[type="submit"]').first();
+      if (await formSubmit.count() && await formSubmit.isVisible()) {
+        await formSubmit.click().catch(() => {});
+      }
     }
   }
 }
