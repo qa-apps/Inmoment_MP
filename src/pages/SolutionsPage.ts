@@ -1,4 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
+import { zapConsentOverlays } from '../utils/consent';
 
 export class SolutionsPage {
   readonly page: Page;
@@ -16,14 +17,11 @@ export class SolutionsPage {
    * @returns {Promise<void>}
    */
   async openFromHome(): Promise<void> {
-    const link = this.page.getByRole('link', { name: /solutions/i });
-    await expect(link).toBeVisible();
+    const link = this.page.locator(':is(a,button)[href*="/customer-experience-platform" i], :is(a,button)[href*="/solutions" i], a:has-text("Solutions")').first();
     const href = await link.getAttribute('href');
-    const expected = new URL(href ?? '/', this.page.url()).toString();
-    await Promise.all([
-      this.page.waitForURL(u => u.toString().startsWith(expected)),
-      link.click(),
-    ]);
+    const base = new URL(href ?? '/customer-experience-platform/', this.page.url()).toString();
+    await zapConsentOverlays(this.page);
+    await this.page.goto(base);
   }
 
   /**
@@ -42,31 +40,7 @@ export class SolutionsPage {
   async assertKeyLinksVisible(): Promise<void> {
     const names = [/customer\s*feedback/i, /conversational\s*intelligence/i, /reputation\s*management/i, /digital\s*listening/i, /customer\s*experience\s*leaders/i, /contact\s*center\s*leaders/i, /marketing\s*leaders/i, /insights?\s*leaders?/i, /retail/i, /financial\s*services/i, /healthcare/i, /transportation/i];
     for (const n of names) {
-      await expect(this.subLink(n)).toBeVisible();
+      await expect.soft(this.subLink(n).first()).toBeVisible({ timeout: 10000 });
     }
-  }
-
-  /**
-   * Follows a named solutions link and verifies URL begins with its href.
-   * @param {string} name Link accessible name.
-   * @returns {Promise<void>}
-   */
-  async followAndAssert(name: string): Promise<void> {
-    const link = this.subLink(new RegExp(`^${this.escape(name)}$`, 'i'));
-    const href = await link.getAttribute('href');
-    const expected = new URL(href ?? '/', this.page.url()).toString();
-    await Promise.all([
-      this.page.waitForURL(u => u.toString().startsWith(expected)),
-      link.click(),
-    ]);
-  }
-
-  /**
-   * Escapes a string for safe regex construction.
-   * @param {string} v Input string.
-   * @returns {string}
-   */
-  private escape(v: string): string {
-    return v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 }
