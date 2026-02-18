@@ -11,16 +11,22 @@
     "codegen": "playwright codegen",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "mcp:playwright": "node ./node_modules/@playwright/mcp/index.js",
+    "mcp:ultimate": "node ./node_modules/ultimate-playwright-mcp/dist/index.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
-    "typescript": "^5.4.0",
-    "dotenv": "^16.4.0",
     "@types/node": "^20.11.0",
-    "eslint": "^8.57.0",
-    "@typescript-eslint/parser": "^6.21.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "eslint-plugin-playwright": "^1.5.4"
+    "@typescript-eslint/parser": "^6.21.0",
+    "dotenv": "^16.4.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-playwright": "^1.5.4",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@playwright/mcp": "^0.0.68",
+    "ultimate-playwright-mcp": "^0.1.3"
   }
 }
