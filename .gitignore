@@ -7,3 +7,12 @@ dist/
 .env
 .DS_Store
 package-lock.json
+.codex/
+AGENTS.md
+graphify-out/
+.idea/
+temp_*.md
+temp_*.txt
+screenshot.png
+.claude/settings.local.json
+.claude/launch.json
